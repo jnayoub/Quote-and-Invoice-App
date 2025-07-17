@@ -55,6 +55,10 @@ const invoiceSchema = new mongoose.Schema({
         required: true
     },
     items: [invoiceItemSchema],
+    workDescription: {
+        type: String,
+        default: ''
+    },
     total: {
         type: Number,
         required: true,

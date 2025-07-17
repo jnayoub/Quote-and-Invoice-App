@@ -85,6 +85,7 @@ app.post('/api/invoices', async (req, res) => {
             clientName: req.body.clientName,
             clientEmail: req.body.clientEmail,
             items: req.body.items || [],
+            workDescription: req.body.workDescription || '',
             total: parseFloat(req.body.total || 0),
             status: 'pending'
         };
@@ -136,6 +137,7 @@ app.put('/api/invoices/:id', async (req, res) => {
         invoice.clientName = req.body.clientName;
         invoice.clientEmail = req.body.clientEmail;
         invoice.items = req.body.items || [];
+        invoice.workDescription = req.body.workDescription || '';
         invoice.total = parseFloat(req.body.total || 0);
         if (req.body.status) {
             invoice.status = req.body.status;
@@ -238,6 +240,74 @@ app.post('/api/quotes/:id/convert', async (req, res) => {
     }
 });
 
+// Update invoice status endpoint
+app.put('/api/invoices/:id/status', async (req, res) => {
+    try {
+        const invoice = await Invoice.findOne({ id: req.params.id });
+        if (!invoice) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+
+        // Update status only
+        invoice.status = req.body.status;
+        await invoice.save();
+        
+        res.json(invoice);
+    } catch (error) {
+        console.error('Error updating invoice status:', error);
+        res.status(500).json({ error: 'Failed to update invoice status' });
+    }
+});
+
+// Update quote status endpoint
+app.put('/api/quotes/:id/status', async (req, res) => {
+    try {
+        const quote = await Quote.findOne({ id: req.params.id });
+        if (!quote) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+
+        // Update status only
+        quote.status = req.body.status;
+        await quote.save();
+        
+        res.json(quote);
+    } catch (error) {
+        console.error('Error updating quote status:', error);
+        res.status(500).json({ error: 'Failed to update quote status' });
+    }
+});
+
+// Delete invoice endpoint
+app.delete('/api/invoices/:id', async (req, res) => {
+    try {
+        const result = await Invoice.deleteOne({ id: req.params.id });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+        
+        res.json({ success: true, message: 'Invoice deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting invoice:', error);
+        res.status(500).json({ error: 'Failed to delete invoice' });
+    }
+});
+
+// Delete quote endpoint
+app.delete('/api/quotes/:id', async (req, res) => {
+    try {
+        const result = await Quote.deleteOne({ id: req.params.id });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+        
+        res.json({ success: true, message: 'Quote deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting quote:', error);
+        res.status(500).json({ error: 'Failed to delete quote' });
+    }
+});
+
 // Line item types
 const lineItemTypes = [
     { value: 'parts', label: 'Parts' },
@@ -287,79 +357,11 @@ app.get('/api/line-item-types', (req, res) => {
 // Password verification endpoint
 app.post('/api/verify-password', (req, res) => {
     const { password } = req.body;
-
+    
     if (password === APP_PASSWORD) {
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false, message: 'Invalid password' });
-    }
-});
-
-// Update invoice status endpoint
-app.put('/api/invoices/:id/status', async (req, res) => {
-    try {
-        const invoice = await Invoice.findOne({ id: req.params.id });
-        if (!invoice) {
-            return res.status(404).json({ error: 'Invoice not found' });
-        }
-
-        // Update status only
-        invoice.status = req.body.status;
-        await invoice.save();
-
-        res.json(invoice);
-    } catch (error) {
-        console.error('Error updating invoice status:', error);
-        res.status(500).json({ error: 'Failed to update invoice status' });
-    }
-});
-
-// Update quote status endpoint
-app.put('/api/quotes/:id/status', async (req, res) => {
-    try {
-        const quote = await Quote.findOne({ id: req.params.id });
-        if (!quote) {
-            return res.status(404).json({ error: 'Quote not found' });
-        }
-
-        // Update status only
-        quote.status = req.body.status;
-        await quote.save();
-
-        res.json(quote);
-    } catch (error) {
-        console.error('Error updating quote status:', error);
-        res.status(500).json({ error: 'Failed to update quote status' });
-    }
-});
-
-// Delete invoice endpoint
-app.delete('/api/invoices/:id', async (req, res) => {
-    try {
-        const result = await Invoice.deleteOne({ id: req.params.id });
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ error: 'Invoice not found' });
-        }
-
-        res.json({ success: true, message: 'Invoice deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting invoice:', error);
-        res.status(500).json({ error: 'Failed to delete invoice' });
-    }
-});
-
-// Delete quote endpoint
-app.delete('/api/quotes/:id', async (req, res) => {
-    try {
-        const result = await Quote.deleteOne({ id: req.params.id });
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ error: 'Quote not found' });
-        }
-
-        res.json({ success: true, message: 'Quote deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting quote:', error);
-        res.status(500).json({ error: 'Failed to delete quote' });
     }
 });
 
@@ -544,6 +546,17 @@ function generatePDFHTML(document, type, config) {
             .print-button:hover {
                 background: #0056b3;
             }
+            .work-description {
+                margin-top: 30px;
+                margin-bottom: 30px;
+            }
+            .work-description-content {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                white-space: pre-wrap;
+                line-height: 1.5;
+            }
         </style>
     </head>
     <body>
@@ -593,8 +606,8 @@ function generatePDFHTML(document, type, config) {
                         <td>${item.description}</td>
                         <td>${item.type ? lineItemTypes.find(t => t.value === item.type)?.label || item.type : 'Other'}</td>
                         <td class="text-center">${item.quantity}</td>
-                        <td class="text-right">$${item.price.toFixed(2)}</td>
-                        <td class="text-right">$${item.total.toFixed(2)}</td>
+                        <td class="text-right">${item.price.toFixed(2)}</td>
+                        <td class="text-right">${item.total.toFixed(2)}</td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -603,9 +616,16 @@ function generatePDFHTML(document, type, config) {
         <div class="total-section">
             <div class="total-row grand-total">
                 <div class="total-label">Total:</div>
-                <div class="total-value">$${document.total.toFixed(2)}</div>
+                <div class="total-value">${document.total.toFixed(2)}</div>
             </div>
         </div>
+        
+        ${isInvoice && document.workDescription ? `
+        <div class="work-description">
+            <div class="section-title">Work Description:</div>
+            <div class="work-description-content">${document.workDescription}</div>
+        </div>
+        ` : ''}
         
         <div class="footer">
             <div>Thank you for your business!</div>

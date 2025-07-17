@@ -493,6 +493,17 @@ class InvoiceQuoteApp {
                 
                 <div class="row mt-3">
                     <div class="col-md-12">
+                        <div class="form-section">
+                            <h5>Work Description</h5>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="workDescription" rows="4" placeholder="Enter a detailed description of the work performed...">${invoice?.workDescription || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-12">
                         <button type="submit" class="btn btn-primary">${isEditing ? 'Update' : 'Create'} Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="app.showInvoices()">Cancel</button>
                     </div>
@@ -767,7 +778,7 @@ class InvoiceQuoteApp {
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <input type="number" class="form-control" placeholder="Qty" name="quantity" min="1" required>
+                    <input type="number" class="form-control" placeholder="Qty" name="quantity" min="0.1" step="0.1" required>
                 </div>
                 <div class="col-md-2">
                     <input type="number" class="form-control" placeholder="Price" name="price" step="0.01" min="0" required>
@@ -827,6 +838,7 @@ class InvoiceQuoteApp {
         const dueDate = document.getElementById('dueDate')?.value;
         const validUntil = document.getElementById('validUntil')?.value;
         const status = document.getElementById('status')?.value;
+        const workDescription = document.getElementById('workDescription')?.value;
 
         const items = [];
         const itemRows = document.querySelectorAll('.item-row');
@@ -860,6 +872,7 @@ class InvoiceQuoteApp {
         if (dueDate) formData.dueDate = dueDate;
         if (validUntil) formData.validUntil = validUntil;
         if (status) formData.status = status;
+        if (workDescription) formData.workDescription = workDescription;
 
         return formData;
     }
