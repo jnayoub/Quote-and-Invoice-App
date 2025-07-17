@@ -287,11 +287,79 @@ app.get('/api/line-item-types', (req, res) => {
 // Password verification endpoint
 app.post('/api/verify-password', (req, res) => {
     const { password } = req.body;
-    
+
     if (password === APP_PASSWORD) {
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false, message: 'Invalid password' });
+    }
+});
+
+// Update invoice status endpoint
+app.put('/api/invoices/:id/status', async (req, res) => {
+    try {
+        const invoice = await Invoice.findOne({ id: req.params.id });
+        if (!invoice) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+
+        // Update status only
+        invoice.status = req.body.status;
+        await invoice.save();
+
+        res.json(invoice);
+    } catch (error) {
+        console.error('Error updating invoice status:', error);
+        res.status(500).json({ error: 'Failed to update invoice status' });
+    }
+});
+
+// Update quote status endpoint
+app.put('/api/quotes/:id/status', async (req, res) => {
+    try {
+        const quote = await Quote.findOne({ id: req.params.id });
+        if (!quote) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+
+        // Update status only
+        quote.status = req.body.status;
+        await quote.save();
+
+        res.json(quote);
+    } catch (error) {
+        console.error('Error updating quote status:', error);
+        res.status(500).json({ error: 'Failed to update quote status' });
+    }
+});
+
+// Delete invoice endpoint
+app.delete('/api/invoices/:id', async (req, res) => {
+    try {
+        const result = await Invoice.deleteOne({ id: req.params.id });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+
+        res.json({ success: true, message: 'Invoice deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting invoice:', error);
+        res.status(500).json({ error: 'Failed to delete invoice' });
+    }
+});
+
+// Delete quote endpoint
+app.delete('/api/quotes/:id', async (req, res) => {
+    try {
+        const result = await Quote.deleteOne({ id: req.params.id });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+
+        res.json({ success: true, message: 'Quote deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting quote:', error);
+        res.status(500).json({ error: 'Failed to delete quote' });
     }
 });
 

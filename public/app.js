@@ -250,16 +250,29 @@ class InvoiceQuoteApp {
                                 <td>${invoice.dueDate}</td>
                                 <td>$${invoice.total.toFixed(2)}</td>
                                 <td>
-                                    <span class="badge bg-${invoice.status === 'paid' ? 'success' : invoice.status === 'overdue' ? 'danger' : 'warning'}">
-                                        ${invoice.status}
-                                    </span>
+                                    <div class="dropdown">
+                                        <span class="badge bg-${invoice.status === 'paid' ? 'success' : invoice.status === 'overdue' ? 'danger' : 'warning'} dropdown-toggle" 
+                                              data-bs-toggle="dropdown" 
+                                              aria-expanded="false"
+                                              style="cursor: pointer;">
+                                            ${invoice.status}
+                                        </span>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="app.updateInvoiceStatus('${invoice.id}', 'pending'); return false;">Pending</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="app.updateInvoiceStatus('${invoice.id}', 'paid'); return false;">Paid</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="app.updateInvoiceStatus('${invoice.id}', 'overdue'); return false;">Overdue</a></li>
+                                        </ul>
+                                    </div>
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary me-1" onclick="app.showInvoiceForm('${invoice.id}')">
                                         Edit
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary" onclick="app.downloadPDF('${invoice.id}', 'invoice')">
+                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="app.downloadPDF('${invoice.id}', 'invoice')">
                                         PDF
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="app.deleteInvoice('${invoice.id}')">
+                                        Delete
                                     </button>
                                 </td>
                             </tr>
@@ -319,9 +332,19 @@ class InvoiceQuoteApp {
                                 <td>${quote.validUntil}</td>
                                 <td>$${quote.total.toFixed(2)}</td>
                                 <td>
-                                    <span class="badge bg-${quote.status === 'accepted' ? 'success' : quote.status === 'converted' ? 'info' : quote.status === 'rejected' ? 'danger' : 'warning'}">
-                                        ${quote.status}
-                                    </span>
+                                    <div class="dropdown">
+                                        <span class="badge bg-${quote.status === 'accepted' ? 'success' : quote.status === 'converted' ? 'info' : quote.status === 'rejected' ? 'danger' : 'warning'} dropdown-toggle" 
+                                              data-bs-toggle="dropdown" 
+                                              aria-expanded="false"
+                                              style="cursor: pointer;">
+                                            ${quote.status}
+                                        </span>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="app.updateQuoteStatus('${quote.id}', 'pending'); return false;">Pending</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="app.updateQuoteStatus('${quote.id}', 'accepted'); return false;">Accepted</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="app.updateQuoteStatus('${quote.id}', 'rejected'); return false;">Rejected</a></li>
+                                        </ul>
+                                    </div>
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary me-1" onclick="app.showQuoteForm('${quote.id}')">
@@ -332,8 +355,11 @@ class InvoiceQuoteApp {
                                             Convert
                                         </button>
                                     ` : ''}
-                                    <button class="btn btn-sm btn-outline-secondary" onclick="app.downloadPDF('${quote.id}', 'quote')">
+                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="app.downloadPDF('${quote.id}', 'quote')">
                                         PDF
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="app.deleteQuote('${quote.id}')">
+                                        Delete
                                     </button>
                                 </td>
                             </tr>
@@ -778,18 +804,18 @@ class InvoiceQuoteApp {
             totalElement.textContent = total.toFixed(2);
         }
     }
-    
+
     logout() {
         // Remove authentication from localStorage
         localStorage.removeItem('invoiceAppAuth');
         this.isAuthenticated = false;
-    
+
         // Update navigation visibility
         this.updateNavVisibility();
-    
+
         // Show login form
         this.showLoginForm();
-    
+
         // Clear any loaded data
         this.invoices = [];
         this.quotes = [];
@@ -964,6 +990,128 @@ class InvoiceQuoteApp {
     downloadPDF(id, type) {
         const url = `/api/${type}s/${id}/pdf`;
         window.open(url, '_blank');
+    }
+
+    // Delete an invoice
+    async deleteInvoice(invoiceId) {
+        if (!confirm('Are you sure you want to delete this invoice?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/invoices/${invoiceId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                // Remove the invoice from the local array
+                this.invoices = this.invoices.filter(invoice => invoice.id !== invoiceId);
+
+                // Refresh the invoices view
+                this.showInvoices();
+
+                // Show success message
+                alert('Invoice deleted successfully');
+            } else {
+                alert('Error deleting invoice');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting invoice');
+        }
+    }
+
+    // Delete a quote
+    async deleteQuote(quoteId) {
+        if (!confirm('Are you sure you want to delete this quote?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/quotes/${quoteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                // Remove the quote from the local array
+                this.quotes = this.quotes.filter(quote => quote.id !== quoteId);
+
+                // Refresh the quotes view
+                this.showQuotes();
+
+                // Show success message
+                alert('Quote deleted successfully');
+            } else {
+                alert('Error deleting quote');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting quote');
+        }
+    }
+
+    // Update invoice status
+    async updateInvoiceStatus(invoiceId, newStatus) {
+        try {
+            const response = await fetch(`/api/invoices/${invoiceId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                // Update the invoice status in the local array
+                const invoice = this.invoices.find(inv => inv.id === invoiceId);
+                if (invoice) {
+                    invoice.status = newStatus;
+                }
+
+                // Refresh the invoices view
+                this.showInvoices();
+            } else {
+                alert('Error updating invoice status');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error updating invoice status');
+        }
+    }
+
+    // Update quote status
+    async updateQuoteStatus(quoteId, newStatus) {
+        try {
+            const response = await fetch(`/api/quotes/${quoteId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                // Update the quote status in the local array
+                const quote = this.quotes.find(q => q.id === quoteId);
+                if (quote) {
+                    quote.status = newStatus;
+                }
+
+                // Refresh the quotes view
+                this.showQuotes();
+            } else {
+                alert('Error updating quote status');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error updating quote status');
+        }
     }
 }
 
