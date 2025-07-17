@@ -13,7 +13,10 @@ class InvoiceQuoteApp {
     async init() {
         // Check if user is authenticated
         this.isAuthenticated = this.checkAuthentication();
-        
+
+        // Update navigation visibility
+        this.updateNavVisibility();
+
         if (this.isAuthenticated) {
             await this.loadData();
             this.showDashboard();
@@ -21,13 +24,20 @@ class InvoiceQuoteApp {
             this.showLoginForm();
         }
     }
-    
+
+    updateNavVisibility() {
+        const navbar = document.getElementById('main-nav');
+        if (navbar) {
+            navbar.style.display = this.isAuthenticated ? 'flex' : 'none';
+        }
+    }
+
     checkAuthentication() {
         // Check if authentication token exists in localStorage
         const authToken = localStorage.getItem('invoiceAppAuth');
         return authToken === 'authenticated';
     }
-    
+
     showLoginForm() {
         const content = document.getElementById('app-content');
         content.innerHTML = `
@@ -53,12 +63,12 @@ class InvoiceQuoteApp {
             </div>
         `;
     }
-    
+
     async verifyPassword(event) {
         event.preventDefault();
-        
+
         const password = document.getElementById('password').value;
-        
+
         try {
             const response = await fetch('/api/verify-password', {
                 method: 'POST',
@@ -67,14 +77,17 @@ class InvoiceQuoteApp {
                 },
                 body: JSON.stringify({ password })
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 // Store authentication in localStorage
                 localStorage.setItem('invoiceAppAuth', 'authenticated');
                 this.isAuthenticated = true;
-                
+
+                // Update navigation visibility
+                this.updateNavVisibility();
+
                 // Load data and show dashboard
                 await this.loadData();
                 this.showDashboard();
@@ -94,11 +107,11 @@ class InvoiceQuoteApp {
                 fetch('/api/config'),
                 fetch('/api/line-item-types')
             ]);
-            
+
             const dashboardData = await dashboardResponse.json();
             this.invoices = dashboardData.invoices;
             this.quotes = dashboardData.quotes;
-            
+
             this.businessConfig = await configResponse.json();
             this.lineItemTypes = await typesResponse.json();
         } catch (error) {
@@ -111,9 +124,8 @@ class InvoiceQuoteApp {
         const content = document.getElementById('app-content');
         content.innerHTML = `
             <div class="row">
-                <div class="col-md-12 d-flex justify-content-between align-items-center">
+                <div class="col-md-12">
                     <h1>Dashboard</h1>
-                    <button class="btn btn-outline-danger" onclick="app.logout()">Logout</button>
                 </div>
             </div>
 
@@ -151,7 +163,7 @@ class InvoiceQuoteApp {
         if (this.invoices.length === 0) {
             return '<p class="text-muted">No invoices yet</p>';
         }
-        
+
         return this.invoices.slice(0, 5).map(invoice => `
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div>
@@ -172,7 +184,7 @@ class InvoiceQuoteApp {
         if (this.quotes.length === 0) {
             return '<p class="text-muted">No quotes yet</p>';
         }
-        
+
         return this.quotes.slice(0, 5).map(quote => `
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div>
@@ -335,7 +347,7 @@ class InvoiceQuoteApp {
     async showInvoiceForm(invoiceId = null) {
         let invoice = null;
         let isEditing = false;
-        
+
         if (invoiceId) {
             isEditing = true;
             try {
@@ -352,7 +364,7 @@ class InvoiceQuoteApp {
                 return;
             }
         }
-        
+
         const content = document.getElementById('app-content');
         content.innerHTML = `
             <div class="row">
@@ -394,8 +406,8 @@ class InvoiceQuoteApp {
                         <div class="form-section">
                             <h5>Items</h5>
                             <div id="items-container">
-                                ${isEditing && invoice.items.length > 0 ? 
-                                    invoice.items.map(item => `
+                                ${isEditing && invoice.items.length > 0 ?
+                invoice.items.map(item => `
                                         <div class="item-row">
                                             <div class="row">
                                                 <div class="col-md-4">
@@ -404,9 +416,9 @@ class InvoiceQuoteApp {
                                                 <div class="col-md-2">
                                                     <select class="form-control" name="type" required onchange="app.handleTypeChange(this)">
                                                         <option value="">Type</option>
-                                                        ${this.lineItemTypes.map(type => 
-                                                            `<option value="${type.value}" ${item.type === type.value ? 'selected' : ''}>${type.label}</option>`
-                                                        ).join('')}
+                                                        ${this.lineItemTypes.map(type =>
+                    `<option value="${type.value}" ${item.type === type.value ? 'selected' : ''}>${type.label}</option>`
+                ).join('')}
                                                     </select>
                                                 </div>
                                                 <div class="col-md-2">
@@ -461,21 +473,21 @@ class InvoiceQuoteApp {
                 </div>
             </form>
         `;
-        
+
         // Set default due date (30 days from now) if not editing
         if (!isEditing) {
             const dueDate = new Date();
             dueDate.setDate(dueDate.getDate() + 30);
             document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
         }
-        
+
         this.setupFormListeners();
     }
 
     async showQuoteForm(quoteId = null) {
         let quote = null;
         let isEditing = false;
-        
+
         if (quoteId) {
             isEditing = true;
             try {
@@ -492,7 +504,7 @@ class InvoiceQuoteApp {
                 return;
             }
         }
-        
+
         const content = document.getElementById('app-content');
         content.innerHTML = `
             <div class="row">
@@ -534,8 +546,8 @@ class InvoiceQuoteApp {
                         <div class="form-section">
                             <h5>Items</h5>
                             <div id="items-container">
-                                ${isEditing && quote.items.length > 0 ? 
-                                    quote.items.map(item => `
+                                ${isEditing && quote.items.length > 0 ?
+                quote.items.map(item => `
                                         <div class="item-row">
                                             <div class="row">
                                                 <div class="col-md-4">
@@ -544,9 +556,9 @@ class InvoiceQuoteApp {
                                                 <div class="col-md-2">
                                                     <select class="form-control" name="type" required onchange="app.handleTypeChange(this)">
                                                         <option value="">Type</option>
-                                                        ${this.lineItemTypes.map(type => 
-                                                            `<option value="${type.value}" ${item.type === type.value ? 'selected' : ''}>${type.label}</option>`
-                                                        ).join('')}
+                                                        ${this.lineItemTypes.map(type =>
+                    `<option value="${type.value}" ${item.type === type.value ? 'selected' : ''}>${type.label}</option>`
+                ).join('')}
                                                     </select>
                                                 </div>
                                                 <div class="col-md-2">
@@ -601,14 +613,14 @@ class InvoiceQuoteApp {
                 </div>
             </form>
         `;
-        
+
         // Set default valid until date (30 days from now) if not editing
         if (!isEditing) {
             const validUntil = new Date();
             validUntil.setDate(validUntil.getDate() + 30);
             document.getElementById('validUntil').value = validUntil.toISOString().split('T')[0];
         }
-        
+
         this.setupFormListeners();
     }
 
@@ -699,7 +711,7 @@ class InvoiceQuoteApp {
         const row = selectElement.closest('.item-row');
         const priceInput = row.querySelector('input[name="price"]');
         const quantityInput = row.querySelector('input[name="quantity"]');
-        
+
         if (selectElement.value === 'labor') {
             // Auto-fill with hourly rate
             priceInput.value = this.businessConfig.hourlyRate || 0;
@@ -709,7 +721,7 @@ class InvoiceQuoteApp {
             priceInput.placeholder = 'Price';
             quantityInput.placeholder = 'Qty';
         }
-        
+
         this.calculateTotal();
     }
 
@@ -754,17 +766,33 @@ class InvoiceQuoteApp {
     calculateTotal() {
         const items = document.querySelectorAll('.item-row');
         let total = 0;
-        
+
         items.forEach(item => {
             const quantity = parseFloat(item.querySelector('input[name="quantity"]').value) || 0;
             const price = parseFloat(item.querySelector('input[name="price"]').value) || 0;
             total += quantity * price;
         });
-        
+
         const totalElement = document.getElementById('total-amount');
         if (totalElement) {
             totalElement.textContent = total.toFixed(2);
         }
+    }
+    
+    logout() {
+        // Remove authentication from localStorage
+        localStorage.removeItem('invoiceAppAuth');
+        this.isAuthenticated = false;
+    
+        // Update navigation visibility
+        this.updateNavVisibility();
+    
+        // Show login form
+        this.showLoginForm();
+    
+        // Clear any loaded data
+        this.invoices = [];
+        this.quotes = [];
     }
 
     getFormData() {
@@ -773,16 +801,16 @@ class InvoiceQuoteApp {
         const dueDate = document.getElementById('dueDate')?.value;
         const validUntil = document.getElementById('validUntil')?.value;
         const status = document.getElementById('status')?.value;
-        
+
         const items = [];
         const itemRows = document.querySelectorAll('.item-row');
-        
+
         itemRows.forEach(row => {
             const description = row.querySelector('input[name="description"]').value;
             const type = row.querySelector('select[name="type"]').value;
             const quantity = parseFloat(row.querySelector('input[name="quantity"]').value);
             const price = parseFloat(row.querySelector('input[name="price"]').value);
-            
+
             if (description && type && quantity && price) {
                 items.push({
                     description,
@@ -793,33 +821,33 @@ class InvoiceQuoteApp {
                 });
             }
         });
-        
+
         const total = items.reduce((sum, item) => sum + item.total, 0);
-        
+
         const formData = {
             clientName,
             clientEmail,
             items,
             total
         };
-        
+
         if (dueDate) formData.dueDate = dueDate;
         if (validUntil) formData.validUntil = validUntil;
         if (status) formData.status = status;
-        
+
         return formData;
     }
 
     async submitInvoice(event, invoiceId = '') {
         event.preventDefault();
-        
+
         const formData = this.getFormData();
         const isEditing = !!invoiceId;
-        
+
         try {
             const url = isEditing ? `/api/invoices/${invoiceId}` : '/api/invoices';
             const method = isEditing ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -827,7 +855,7 @@ class InvoiceQuoteApp {
                 },
                 body: JSON.stringify(formData)
             });
-            
+
             if (response.ok) {
                 await this.loadData();
                 this.showInvoices();
@@ -843,14 +871,14 @@ class InvoiceQuoteApp {
 
     async submitQuote(event, quoteId = '') {
         event.preventDefault();
-        
+
         const formData = this.getFormData();
         const isEditing = !!quoteId;
-        
+
         try {
             const url = isEditing ? `/api/quotes/${quoteId}` : '/api/quotes';
             const method = isEditing ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -858,7 +886,7 @@ class InvoiceQuoteApp {
                 },
                 body: JSON.stringify(formData)
             });
-            
+
             if (response.ok) {
                 await this.loadData();
                 this.showQuotes();
@@ -874,7 +902,7 @@ class InvoiceQuoteApp {
 
     async submitConfiguration(event) {
         event.preventDefault();
-        
+
         const configData = {
             businessName: document.getElementById('businessName').value,
             ownerName: document.getElementById('ownerName').value,
@@ -887,7 +915,7 @@ class InvoiceQuoteApp {
             zipCode: document.getElementById('zipCode').value,
             hourlyRate: parseFloat(document.getElementById('hourlyRate').value) || 0
         };
-        
+
         try {
             const response = await fetch('/api/config', {
                 method: 'POST',
@@ -896,7 +924,7 @@ class InvoiceQuoteApp {
                 },
                 body: JSON.stringify(configData)
             });
-            
+
             if (response.ok) {
                 this.businessConfig = await response.json();
                 alert('Configuration saved successfully!');
@@ -918,7 +946,7 @@ class InvoiceQuoteApp {
                     'Content-Type': 'application/json',
                 }
             });
-            
+
             if (response.ok) {
                 await this.loadData();
                 this.showQuotes();
@@ -942,31 +970,22 @@ class InvoiceQuoteApp {
 // Initialize the app
 const app = new InvoiceQuoteApp();
 
-// Global functions for navigation
+// Global functions for navigation - these are no longer needed since we're using app.method() directly in the HTML
+// We're keeping them for backward compatibility
 function showDashboard() {
-    app.showDashboard();
+    if (app.isAuthenticated) {
+        app.showDashboard();
+    }
 }
 
 function showInvoices() {
-    app.showInvoices();
+    if (app.isAuthenticated) {
+        app.showInvoices();
+    }
 }
 
 function showQuotes() {
-    app.showQuotes();
-}
-
-function showConfiguration() {
-    app.showConfiguration();
-}    log
-function logout() {
-        // Remove authentication from localStorage
-        localStorage.removeItem('invoiceAppAuth');
-        this.isAuthenticated = false;
-        
-        // Show login form
-        this.showLoginForm();
-        
-        // Clear any loaded data
-        this.invoices = [];
-        this.quotes = [];
+    if (app.isAuthenticated) {
+        app.showQuotes();
     }
+}
