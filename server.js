@@ -8,6 +8,9 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
+// Set up password protection
+const APP_PASSWORD = process.env.APP_PASSWORD || 'admin123'; // Default password if not set in .env
+
 // Import models
 const TestModel = require('./models/TestModel');
 const BusinessConfig = require('./models/BusinessConfig');
@@ -85,10 +88,10 @@ app.post('/api/invoices', async (req, res) => {
             total: parseFloat(req.body.total || 0),
             status: 'pending'
         };
-        
+
         const invoice = new Invoice(invoiceData);
         await invoice.save();
-        
+
         res.json(invoice);
     } catch (error) {
         console.error('Error creating invoice:', error);
@@ -109,10 +112,10 @@ app.post('/api/quotes', async (req, res) => {
             total: parseFloat(req.body.total || 0),
             status: 'pending'
         };
-        
+
         const quote = new Quote(quoteData);
         await quote.save();
-        
+
         res.json(quote);
     } catch (error) {
         console.error('Error creating quote:', error);
@@ -213,7 +216,7 @@ app.post('/api/quotes/:id/convert', async (req, res) => {
             id: uuidv4(),
             number: `INV-${Date.now()}`,
             date: new Date().toISOString().split('T')[0],
-            dueDate: req.body.dueDate || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+            dueDate: req.body.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             clientName: quote.clientName,
             clientEmail: quote.clientEmail,
             items: quote.items,
@@ -281,6 +284,17 @@ app.get('/api/line-item-types', (req, res) => {
     res.json(lineItemTypes);
 });
 
+// Password verification endpoint
+app.post('/api/verify-password', (req, res) => {
+    const { password } = req.body;
+    
+    if (password === APP_PASSWORD) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, message: 'Invalid password' });
+    }
+});
+
 // PDF generation routes
 app.get('/api/invoices/:id/pdf', async (req, res) => {
     try {
@@ -288,7 +302,7 @@ app.get('/api/invoices/:id/pdf', async (req, res) => {
         if (!invoice) {
             return res.status(404).json({ error: 'Invoice not found' });
         }
-        
+
         const config = await BusinessConfig.findOne() || {};
         const html = generatePDFHTML(invoice, 'invoice', config);
         res.setHeader('Content-Type', 'text/html');
@@ -305,7 +319,7 @@ app.get('/api/quotes/:id/pdf', async (req, res) => {
         if (!quote) {
             return res.status(404).json({ error: 'Quote not found' });
         }
-        
+
         const config = await BusinessConfig.findOne() || {};
         const html = generatePDFHTML(quote, 'quote', config);
         res.setHeader('Content-Type', 'text/html');
@@ -322,7 +336,7 @@ function generatePDFHTML(document, type, config) {
     const title = isInvoice ? 'INVOICE' : 'QUOTE';
     const dateLabel = isInvoice ? 'Due Date' : 'Valid Until';
     const dateValue = isInvoice ? document.dueDate : document.validUntil;
-    
+
     return `
     <!DOCTYPE html>
     <html>
@@ -546,9 +560,9 @@ app.get('/admin', async (req, res) => {
                 randomNumber: Math.floor(Math.random() * 1000)
             }
         });
-        
+
         await testData.save();
-        
+
         res.json({
             success: true,
             message: 'Test data stored successfully',
@@ -570,7 +584,7 @@ app.get('/admin-pull', async (req, res) => {
         const testData = await TestModel.find()
             .sort({ createdAt: -1 }) // Sort by newest first
             .limit(3);
-        
+
         res.json({
             success: true,
             message: `Retrieved ${testData.length} entries`,

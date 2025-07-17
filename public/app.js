@@ -6,12 +6,85 @@ class InvoiceQuoteApp {
         this.businessConfig = {};
         this.lineItemTypes = [];
         this.currentView = 'dashboard';
+        this.isAuthenticated = false;
         this.init();
     }
 
     async init() {
-        await this.loadData();
-        this.showDashboard();
+        // Check if user is authenticated
+        this.isAuthenticated = this.checkAuthentication();
+        
+        if (this.isAuthenticated) {
+            await this.loadData();
+            this.showDashboard();
+        } else {
+            this.showLoginForm();
+        }
+    }
+    
+    checkAuthentication() {
+        // Check if authentication token exists in localStorage
+        const authToken = localStorage.getItem('invoiceAppAuth');
+        return authToken === 'authenticated';
+    }
+    
+    showLoginForm() {
+        const content = document.getElementById('app-content');
+        content.innerHTML = `
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="text-center">Invoice & Quote App</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="login-form" onsubmit="app.verifyPassword(event)">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">Login</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    async verifyPassword(event) {
+        event.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        
+        try {
+            const response = await fetch('/api/verify-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Store authentication in localStorage
+                localStorage.setItem('invoiceAppAuth', 'authenticated');
+                this.isAuthenticated = true;
+                
+                // Load data and show dashboard
+                await this.loadData();
+                this.showDashboard();
+            } else {
+                alert('Invalid password. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error verifying password. Please try again.');
+        }
     }
 
     async loadData() {
@@ -38,8 +111,9 @@ class InvoiceQuoteApp {
         const content = document.getElementById('app-content');
         content.innerHTML = `
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-12 d-flex justify-content-between align-items-center">
                     <h1>Dashboard</h1>
+                    <button class="btn btn-outline-danger" onclick="app.logout()">Logout</button>
                 </div>
             </div>
 
@@ -883,4 +957,16 @@ function showQuotes() {
 
 function showConfiguration() {
     app.showConfiguration();
-}
+}    log
+function logout() {
+        // Remove authentication from localStorage
+        localStorage.removeItem('invoiceAppAuth');
+        this.isAuthenticated = false;
+        
+        // Show login form
+        this.showLoginForm();
+        
+        // Clear any loaded data
+        this.invoices = [];
+        this.quotes = [];
+    }
