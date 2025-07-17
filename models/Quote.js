@@ -52,7 +52,7 @@ const quoteSchema = new mongoose.Schema({
     },
     clientEmail: {
         type: String,
-        required: true
+        required: false
     },
     items: [quoteItemSchema],
     total: {

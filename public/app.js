@@ -410,7 +410,7 @@ class InvoiceQuoteApp {
                             </div>
                             <div class="mb-3">
                                 <label for="clientEmail" class="form-label">Client Email</label>
-                                <input type="email" class="form-control" id="clientEmail" value="${invoice?.clientEmail || ''}" required>
+                                <input type="email" class="form-control" id="clientEmail" value="${invoice?.clientEmail || ''}">
                             </div>
                             <div class="mb-3">
                                 <label for="dueDate" class="form-label">Due Date</label>
@@ -561,7 +561,7 @@ class InvoiceQuoteApp {
                             </div>
                             <div class="mb-3">
                                 <label for="clientEmail" class="form-label">Client Email</label>
-                                <input type="email" class="form-control" id="clientEmail" value="${quote?.clientEmail || ''}" required>
+                                <input type="email" class="form-control" id="clientEmail" value="${quote?.clientEmail || ''}">
                             </div>
                             <div class="mb-3">
                                 <label for="validUntil" class="form-label">Valid Until</label>
