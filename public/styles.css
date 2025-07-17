@@ -1,0 +1,48 @@
+/* Custom styles for the invoice and quote app */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.btn-group-sm > .btn, .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.form-section {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+}
+
+.item-row {
+    background: white;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+#items-container .item-row:last-child {
+    margin-bottom: 0;
+}
+
+.total-display {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #198754;
+}
