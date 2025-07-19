@@ -234,6 +234,7 @@ class InvoiceQuoteApp {
                         <tr>
                             <th>Number</th>
                             <th>Client</th>
+                            <th>Vehicle</th>
                             <th>Date</th>
                             <th>Due Date</th>
                             <th>Total</th>
@@ -246,6 +247,7 @@ class InvoiceQuoteApp {
                             <tr>
                                 <td><strong>${invoice.number}</strong></td>
                                 <td>${invoice.clientName}</td>
+                                <td><small>${invoice.vehicleInformation && (invoice.vehicleInformation.year || invoice.vehicleInformation.make || invoice.vehicleInformation.model) ? `${invoice.vehicleInformation.year || ''} ${invoice.vehicleInformation.make || ''} ${invoice.vehicleInformation.model || ''}`.trim() : '-'}</small></td>
                                 <td>${invoice.date}</td>
                                 <td>${invoice.dueDate}</td>
                                 <td>$${invoice.total.toFixed(2)}</td>
@@ -316,6 +318,7 @@ class InvoiceQuoteApp {
                         <tr>
                             <th>Number</th>
                             <th>Client</th>
+                            <th>Vehicle</th>
                             <th>Date</th>
                             <th>Valid Until</th>
                             <th>Total</th>
@@ -328,6 +331,7 @@ class InvoiceQuoteApp {
                             <tr>
                                 <td><strong>${quote.number}</strong></td>
                                 <td>${quote.clientName}</td>
+                                <td><small>${quote.vehicleInformation && (quote.vehicleInformation.year || quote.vehicleInformation.make || quote.vehicleInformation.model) ? `${quote.vehicleInformation.year || ''} ${quote.vehicleInformation.make || ''} ${quote.vehicleInformation.model || ''}`.trim() : '-'}</small></td>
                                 <td>${quote.date}</td>
                                 <td>${quote.validUntil}</td>
                                 <td>$${quote.total.toFixed(2)}</td>
@@ -426,6 +430,44 @@ class InvoiceQuoteApp {
                                 </select>
                             </div>` : ''}
                         </div>
+                        
+                        <div class="form-section mt-4">
+                            <h5>Vehicle Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="vehicleMake" class="form-label">Make</label>
+                                        <input type="text" class="form-control" id="vehicleMake" value="${invoice?.vehicleInformation?.make || ''}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="vehicleModel" class="form-label">Model</label>
+                                        <input type="text" class="form-control" id="vehicleModel" value="${invoice?.vehicleInformation?.model || ''}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="vehicleYear" class="form-label">Year</label>
+                                        <input type="text" class="form-control" id="vehicleYear" value="${invoice?.vehicleInformation?.year || ''}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="vehicleEngine" class="form-label">Engine</label>
+                                        <input type="text" class="form-control" id="vehicleEngine" value="${invoice?.vehicleInformation?.engine || ''}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="vehicleMilage" class="form-label">Mileage</label>
+                                        <input type="text" class="form-control" id="vehicleMilage" value="${invoice?.vehicleInformation?.milage || ''}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="col-md-6">
@@ -448,7 +490,7 @@ class InvoiceQuoteApp {
                                                     </select>
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <input type="number" class="form-control" placeholder="Qty" name="quantity" min="1" value="${item.quantity}" required>
+                                                    <input type="number" class="form-control" placeholder="Qty" name="quantity" value="${item.quantity}" required>
                                                 </div>
                                                 <div class="col-md-2">
                                                     <input type="number" class="form-control" placeholder="Price" name="price" step="0.01" min="0" value="${item.price}" required>
@@ -471,7 +513,7 @@ class InvoiceQuoteApp {
                                                 </select>
                                             </div>
                                             <div class="col-md-2">
-                                                <input type="number" class="form-control" placeholder="Qty" name="quantity" min="1" required>
+                                                <input type="number" class="form-control" placeholder="Qty" name="quantity" required>
                                             </div>
                                             <div class="col-md-2">
                                                 <input type="number" class="form-control" placeholder="Price" name="price" step="0.01" min="0" required>
@@ -577,6 +619,44 @@ class InvoiceQuoteApp {
                                 </select>
                             </div>` : ''}
                         </div>
+                        
+                        <div class="form-section mt-4">
+                            <h5>Vehicle Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="vehicleMake" class="form-label">Make</label>
+                                        <input type="text" class="form-control" id="vehicleMake" value="${quote?.vehicleInformation?.make || ''}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="vehicleModel" class="form-label">Model</label>
+                                        <input type="text" class="form-control" id="vehicleModel" value="${quote?.vehicleInformation?.model || ''}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="vehicleYear" class="form-label">Year</label>
+                                        <input type="text" class="form-control" id="vehicleYear" value="${quote?.vehicleInformation?.year || ''}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="vehicleEngine" class="form-label">Engine</label>
+                                        <input type="text" class="form-control" id="vehicleEngine" value="${quote?.vehicleInformation?.engine || ''}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="vehicleMilage" class="form-label">Mileage</label>
+                                        <input type="text" class="form-control" id="vehicleMilage" value="${quote?.vehicleInformation?.milage || ''}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="col-md-6">
@@ -599,7 +679,7 @@ class InvoiceQuoteApp {
                                                     </select>
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <input type="number" class="form-control" placeholder="Qty" name="quantity" min="1" value="${item.quantity}" required>
+                                                    <input type="number" class="form-control" placeholder="Qty" name="quantity" value="${item.quantity}" required>
                                                 </div>
                                                 <div class="col-md-2">
                                                     <input type="number" class="form-control" placeholder="Price" name="price" step="0.01" min="0" value="${item.price}" required>
@@ -622,7 +702,7 @@ class InvoiceQuoteApp {
                                                 </select>
                                             </div>
                                             <div class="col-md-2">
-                                                <input type="number" class="form-control" placeholder="Qty" name="quantity" min="1" required>
+                                                <input type="number" class="form-control" placeholder="Qty" name="quantity" required>
                                             </div>
                                             <div class="col-md-2">
                                                 <input type="number" class="form-control" placeholder="Price" name="price" step="0.01" min="0" required>
@@ -840,6 +920,15 @@ class InvoiceQuoteApp {
         const status = document.getElementById('status')?.value;
         const workDescription = document.getElementById('workDescription')?.value;
 
+        // Vehicle information
+        const vehicleInformation = {
+            make: document.getElementById('vehicleMake')?.value || '',
+            model: document.getElementById('vehicleModel')?.value || '',
+            year: document.getElementById('vehicleYear')?.value || '',
+            engine: document.getElementById('vehicleEngine')?.value || '',
+            milage: document.getElementById('vehicleMilage')?.value || ''
+        };
+
         const items = [];
         const itemRows = document.querySelectorAll('.item-row');
 
@@ -865,6 +954,7 @@ class InvoiceQuoteApp {
         const formData = {
             clientName,
             clientEmail,
+            vehicleInformation,
             items,
             total
         };

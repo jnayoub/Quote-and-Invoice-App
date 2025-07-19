@@ -54,6 +54,28 @@ const invoiceSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    vehicleInformation: {
+        make: {
+            type: String,
+            required: false
+        },
+        model: {
+            type: String,
+            required: false
+        },
+        year: {
+            type: String,
+            required: false
+        },
+        engine: {
+            type: String,
+            required: false
+        },
+        milage: {
+            type: String,
+            required: false
+        }
+    },
     items: [invoiceItemSchema],
     workDescription: {
         type: String,
@@ -80,7 +102,7 @@ const invoiceSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt field on save
-invoiceSchema.pre('save', function(next) {
+invoiceSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
     next();
 });

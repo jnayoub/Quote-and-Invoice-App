@@ -54,6 +54,28 @@ const quoteSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    vehicleInformation: {
+        make: {
+            type: String,
+            required: false
+        },
+        model: {
+            type: String,
+            required: false
+        },
+        year: {
+            type: String,
+            required: false
+        },
+        engine: {
+            type: String,
+            required: false
+        },
+        milage: {
+            type: String,
+            required: false
+        }
+    },
     items: [quoteItemSchema],
     total: {
         type: Number,
@@ -76,7 +98,7 @@ const quoteSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt field on save
-quoteSchema.pre('save', function(next) {
+quoteSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
     next();
 });

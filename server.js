@@ -84,6 +84,7 @@ app.post('/api/invoices', async (req, res) => {
             dueDate: req.body.dueDate,
             clientName: req.body.clientName,
             clientEmail: req.body.clientEmail,
+            vehicleInformation: req.body.vehicleInformation || {},
             items: req.body.items || [],
             workDescription: req.body.workDescription || '',
             total: parseFloat(req.body.total || 0),
@@ -109,6 +110,7 @@ app.post('/api/quotes', async (req, res) => {
             validUntil: req.body.validUntil,
             clientName: req.body.clientName,
             clientEmail: req.body.clientEmail,
+            vehicleInformation: req.body.vehicleInformation || {},
             items: req.body.items || [],
             total: parseFloat(req.body.total || 0),
             status: 'pending'
@@ -136,6 +138,7 @@ app.put('/api/invoices/:id', async (req, res) => {
         invoice.dueDate = req.body.dueDate;
         invoice.clientName = req.body.clientName;
         invoice.clientEmail = req.body.clientEmail;
+        invoice.vehicleInformation = req.body.vehicleInformation || {};
         invoice.items = req.body.items || [];
         invoice.workDescription = req.body.workDescription || '';
         invoice.total = parseFloat(req.body.total || 0);
@@ -163,6 +166,7 @@ app.put('/api/quotes/:id', async (req, res) => {
         quote.validUntil = req.body.validUntil;
         quote.clientName = req.body.clientName;
         quote.clientEmail = req.body.clientEmail;
+        quote.vehicleInformation = req.body.vehicleInformation || {};
         quote.items = req.body.items || [];
         quote.total = parseFloat(req.body.total || 0);
         if (req.body.status) {
@@ -221,6 +225,7 @@ app.post('/api/quotes/:id/convert', async (req, res) => {
             dueDate: req.body.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             clientName: quote.clientName,
             clientEmail: quote.clientEmail,
+            vehicleInformation: quote.vehicleInformation || {},
             items: quote.items,
             total: quote.total,
             status: 'pending'
@@ -251,7 +256,7 @@ app.put('/api/invoices/:id/status', async (req, res) => {
         // Update status only
         invoice.status = req.body.status;
         await invoice.save();
-        
+
         res.json(invoice);
     } catch (error) {
         console.error('Error updating invoice status:', error);
@@ -270,7 +275,7 @@ app.put('/api/quotes/:id/status', async (req, res) => {
         // Update status only
         quote.status = req.body.status;
         await quote.save();
-        
+
         res.json(quote);
     } catch (error) {
         console.error('Error updating quote status:', error);
@@ -285,7 +290,7 @@ app.delete('/api/invoices/:id', async (req, res) => {
         if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Invoice not found' });
         }
-        
+
         res.json({ success: true, message: 'Invoice deleted successfully' });
     } catch (error) {
         console.error('Error deleting invoice:', error);
@@ -300,7 +305,7 @@ app.delete('/api/quotes/:id', async (req, res) => {
         if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Quote not found' });
         }
-        
+
         res.json({ success: true, message: 'Quote deleted successfully' });
     } catch (error) {
         console.error('Error deleting quote:', error);
@@ -357,7 +362,7 @@ app.get('/api/line-item-types', (req, res) => {
 // Password verification endpoint
 app.post('/api/verify-password', (req, res) => {
     const { password } = req.body;
-    
+
     if (password === APP_PASSWORD) {
         res.json({ success: true });
     } else {
@@ -589,6 +594,19 @@ function generatePDFHTML(document, type, config) {
                 <div>${document.clientEmail}</div>
             </div>
         </div>
+        
+        ${document.vehicleInformation && (document.vehicleInformation.make || document.vehicleInformation.model || document.vehicleInformation.year || document.vehicleInformation.engine || document.vehicleInformation.milage) ? `
+        <div class="client-section">
+            <div class="section-title">Vehicle Information:</div>
+            <div class="client-info">
+                ${document.vehicleInformation.year ? `<div><strong>Year:</strong> ${document.vehicleInformation.year}</div>` : ''}
+                ${document.vehicleInformation.make ? `<div><strong>Make:</strong> ${document.vehicleInformation.make}</div>` : ''}
+                ${document.vehicleInformation.model ? `<div><strong>Model:</strong> ${document.vehicleInformation.model}</div>` : ''}
+                ${document.vehicleInformation.engine ? `<div><strong>Engine:</strong> ${document.vehicleInformation.engine}</div>` : ''}
+                ${document.vehicleInformation.milage ? `<div><strong>Mileage:</strong> ${document.vehicleInformation.milage}</div>` : ''}
+            </div>
+        </div>
+        ` : ''}
         
         <table class="items-table">
             <thead>
